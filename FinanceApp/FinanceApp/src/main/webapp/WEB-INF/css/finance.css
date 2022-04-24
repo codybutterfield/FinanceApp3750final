@@ -1,0 +1,74 @@
+html {
+    
+
+}
+body {
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.06);
+    color: white;
+    background: gray;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 2em 2em 4em;
+}
+nav ul{
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+}
+nav ul li{
+  margin: 0 5px;
+}
+nav ul li a{
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+nav ul li a.active,
+nav ul li a:hover{
+  color: #111;
+  background: rgb(255, 255, 255);
+}
+table td{
+   padding: 20px;
+}
+
+@keyframes animate {
+  0% {
+    background-position: 0 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.shadow:before,
+.shadow:after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  background: linear-gradient(45deg, black, gray, black, gray, black, gray, black, gray, black,gray);
+  background-size: 400% 400%;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  border-radius: 20px;
+  z-index: -1;
+  animation: animate 25s ease alternate infinite;
+}
+
+.shadow:after {
+  filter: blur(20px);
+}
+select{
+    width: 250px;
+}
