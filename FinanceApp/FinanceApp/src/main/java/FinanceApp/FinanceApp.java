@@ -64,6 +64,70 @@ public class FinanceApp {
 
     }
 	
+	public int getCurrentWallet() {
+		int currentWallet = 0;
+		Connection conn = null;
+		try {
+		    String url       = "jdbc:mysql://localhost:3306/mysql";
+		    String user      = "root";
+		    String password  = "root";
+
+		    Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+		    conn = DriverManager.getConnection(url, user, password);
+		} catch(SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+		   System.out.println(e.getMessage());
+		}
+		
+		String currWalletQuery = "select currentWallet from finance.wallet where walletID = 1";
+	    try (Statement stmt = conn.createStatement()) {
+	      ResultSet rs = stmt.executeQuery(currWalletQuery);
+	      rs.next();
+	      currentWallet = rs.getInt("currentWallet");
+	    } catch (SQLException e) {
+		  System.out.println(e);
+		}
+	
+		try {
+	    	conn.close();}
+	    catch(Exception e) {
+	    	System.out.println(e);
+	    }
+		
+		return currentWallet;
+    }
+	
+	public void addFunds(BigDecimal funds) {
+		Connection conn = null;
+		try {
+		    String url       = "jdbc:mysql://localhost:3306/mysql";
+		    String user      = "root";
+		    String password  = "root";
+
+		    Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+		    conn = DriverManager.getConnection(url, user, password);
+		} catch(SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+		   System.out.println(e.getMessage());
+		}
+		
+		int currentWallet = getCurrentWallet();
+		funds = funds.multiply(BigDecimal.valueOf(100));
+	    currentWallet += funds.intValue();
+		
+		String addFundsQuery = "update finance.wallet "
+	      		+ "set currentWallet = " + currentWallet + ", netWorth = " + currentWallet + " where walletID = 1";
+	    try (Statement stmt = conn.createStatement()) {
+	      stmt.executeUpdate(addFundsQuery);
+	    } catch (SQLException e) {
+	      System.out.println(e);
+	    }
+	    
+	    try {
+	    	conn.close();}
+	    catch(Exception e) {
+	    	System.out.println(e);
+	    }
+	}
+	
 	
 	public void oneTicker(String ticker, int perc) {
 		BigDecimal startDec = new BigDecimal(0);
