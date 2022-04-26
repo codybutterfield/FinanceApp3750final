@@ -2,6 +2,7 @@ package FinanceApp;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -96,7 +97,7 @@ public class FinanceApp {
 		return currentWallet;
     }
 	
-	public void addFunds(BigDecimal funds) {
+	public void addFunds(int funds) {
 		Connection conn = null;
 		try {
 		    String url       = "jdbc:mysql://localhost:3306/mysql";
@@ -110,8 +111,7 @@ public class FinanceApp {
 		}
 		
 		int currentWallet = getCurrentWallet();
-		funds = funds.multiply(BigDecimal.valueOf(100));
-	    currentWallet += funds.intValue();
+	    currentWallet += funds;
 		
 		String addFundsQuery = "update finance.wallet "
 	      		+ "set currentWallet = " + currentWallet + ", netWorth = " + currentWallet + " where walletID = 1";
@@ -158,38 +158,78 @@ public class FinanceApp {
 		
 	}
 
-	public void threeTicker(String ticker1, String ticker2, String ticker3, int perc1, int perc2, int perc3)
+	public void threeTicker(String ticker1, String ticker2, String ticker3, int perc1, int perc2, int perc3) throws IOException
 	{
-		BigDecimal startDec = new BigDecimal(0);
-		BigDecimal ticker1Dec = startDec.multiply(BigDecimal.valueOf(perc1 / 100));
-		ticker1Dec = ticker1Dec.setScale(2, RoundingMode.HALF_DOWN);
-		BigDecimal ticker2Dec = startDec.subtract(ticker1Dec);
-		ticker2Dec = ticker2Dec.multiply(BigDecimal.valueOf(perc2/(perc2 + perc3)));
-		BigDecimal ticker3Dec;
-		if((perc1 + perc2 + perc3) < 100)
-		{
-			ticker3Dec = startDec.multiply(BigDecimal.valueOf(perc3 / 100));
-			ticker3Dec = ticker3Dec.setScale(2, RoundingMode.HALF_DOWN);
-		}
-		else
-		{
-			ticker3Dec = startDec.subtract(ticker1Dec);
-			ticker3Dec = ticker3Dec.subtract(ticker2Dec);
-		}
-		BigDecimal subtractDec = ticker1Dec.add(ticker2Dec);
-		subtractDec = subtractDec.add(ticker3Dec);
+		int startDec = getCurrentWallet();
+
+		
+		int ticker1Dec = (startDec*perc1)/100;
+		int ticker2Dec = (startDec*perc2)/100;
+		int ticker3Dec = (startDec*perc3)/100;	
+		
+//		BigDecimal ticker2Dec = startDec.subtract(ticker1Dec);
+//		ticker2Dec = ticker2Dec.multiply(bdPerc2.divide(bdPerc2.add(bdPerc3)));
+//		ticker2Dec = ticker2Dec.setScale(2, RoundingMode.HALF_DOWN);
+//		BigDecimal ticker3Dec;
+//		if((perc1 + perc2 + perc3) < 100)
+//		{
+//			ticker3Dec = startDec.multiply(bdPerc3.divide(BigDecimal.valueOf(100)));
+//			ticker3Dec = ticker3Dec.setScale(2, RoundingMode.HALF_DOWN);
+//		}
+//		else
+//		{
+//			ticker3Dec = startDec.subtract(ticker1Dec);
+//			ticker3Dec = ticker3Dec.subtract(ticker2Dec);
+//		}
+		
+		int subtractDec = ticker1Dec + ticker2Dec + ticker3Dec;
+		/* Check for not enough money */
+		subtractDec = 0 - subtractDec;
 		//invest ticker1Dec, ticker2Dec, and ticker3Dec, subtract subtractDec from wallet
+		
+		
+		int ticker1shares = ticker1Dec / getPrice(ticker1);
+		int ticker2shares = ticker2Dec / getPrice(ticker2);
+		int ticker3shares = ticker3Dec / getPrice(ticker3);
+		
+		if (startDec + subtractDec >= 0) {
+			insertInvest(ticker1, ticker2, ticker3, getPrice(ticker1), getPrice(ticker2), getPrice(ticker3), ticker1shares, ticker2shares, ticker3shares);
+			addFunds(subtractDec);
+		}
 	}
 	
-	/*
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 */
+	//symbol, price, date, shares
+	
+	public void insertInvest(String ticker1, String ticker2, String ticker3, int price1, int price2, int price3, int ticker1shares, int ticker2shares, int ticker3shares) {
+		Connection conn = null;
+		try {
+		    String url       = "jdbc:mysql://localhost:3306/mysql";
+		    String user      = "root";
+		    String password  = "root";
+
+		    Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+		    conn = DriverManager.getConnection(url, user, password);
+		} catch(SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+		   System.out.println(e.getMessage());
+		}
+		
+		String investQuery1 = "insert into finance.stocks(tickerSymbol, priceBoughtAt, dateBought, shares) values ('" + ticker1 + "', " + price1 + ", curdate(), " + ticker1shares + ")";
+		String investQuery2 = "insert into finance.stocks(tickerSymbol, priceBoughtAt, dateBought, shares) values ('" + ticker2 + "', " + price2 + ", curdate(), " + ticker2shares + ")";
+		String investQuery3 = "insert into finance.stocks(tickerSymbol, priceBoughtAt, dateBought, shares) values ('" + ticker3 + "', " + price3 + ", curdate(), " + ticker3shares + ")";
+	    try (Statement stmt = conn.createStatement()) {
+	      stmt.executeUpdate(investQuery1);
+	      stmt.executeUpdate(investQuery2);
+	      stmt.executeUpdate(investQuery3);
+	    } catch (SQLException e) {
+	      System.out.println(e);
+	    }
+	    
+	    try {
+	    	conn.close();
+	    } catch(Exception e) {
+	    	System.out.println(e);
+	    }
+	}
 	
 	private String convertDate(Calendar cal) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -258,9 +298,10 @@ public class FinanceApp {
         return stock;
     }
     
-    public Stock getPrice(String stockName) throws IOException {
+    public int getPrice(String stockName) throws IOException {
     	Stock stock = YahooFinance.get(stockName);
-    	System.out.println(stock);
-		return stock;
+    	BigDecimal price = stock.getQuote().getPrice();
+    	price.multiply(BigDecimal.valueOf(100));
+    	return price.intValue();
     }
 }

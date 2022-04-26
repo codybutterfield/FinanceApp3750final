@@ -8,11 +8,22 @@
   <servlet>
    <servlet-name>AddFundsServlet</servlet-name>
    <servlet-class>FinanceApp.AddFundsServlet</servlet-class>
+  </servlet>
+  
+  <servlet> 
+   <servlet-name>InvestServlet</servlet-name>
+	<servlet-class>FinanceApp.InvestServlet</servlet-class>
 </servlet>
 
 <servlet-mapping>
    <servlet-name>AddFundsServlet</servlet-name>
    <url-pattern>/addFunds</url-pattern>
 </servlet-mapping>
+   
+<servlet-mapping>
+   <servlet-name>InvestServlet</servlet-name>
+	<url-pattern>/testResult</url-pattern>
+</servlet-mapping>
+
 
 </web-app>
