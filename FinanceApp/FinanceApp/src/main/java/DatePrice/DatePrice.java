@@ -25,14 +25,26 @@ public class DatePrice {
     public void setTime(Calendar time) {
         this.time = time;
     }
-
-
+    
+    public int getYear() {
+    	return time.get(Calendar.YEAR);
+    }
+    
+    public int getMonth() {
+    	return time.get(Calendar.MONTH);
+    }
+    
+    public int getDay() {
+    	return time.get(Calendar.DAY_OF_MONTH);
+    }
 
     public BigDecimal getPrice() {
         return price;
     }
 
-
+    public int getPriceInt() {
+    	return price.intValue();
+    }
 
     public void setPrice(BigDecimal price) {
         this.price = price;

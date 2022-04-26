@@ -1,13 +1,129 @@
 <%@ page import="FinanceApp.FinanceApp" %>
+<%@ page import="DatePrice.DatePrice" %>
 <%@page import="java.sql.DriverManager"%>
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.Statement"%>
 <%@page import="java.sql.Connection"%>
 <%@page import="java.sql.SQLException" %>
 <%@page import="java.io.IOException" %>
+<%@page import="java.util.List" %>
 <style><%@include file="/WEB-INF/css/finance.css"%></style>
 
-
+<script type="text/javascript">
+	window.onload = function() {
+		<%
+			String stock1 = "TWTR";
+			String stock2 = "TSLA";
+			String stock3 = "MSFT";
+			int stYear = 2020, stMonth = 1, stDay = 1;
+			String interval = "daily";
+		%>
+		
+		var datePoints1= []
+		<%
+			FinanceApp fApp = new FinanceApp();
+			List<DatePrice> historyInfo = fApp.getHistoryDatePrice(stock1, stYear, stMonth, stDay, interval);
+			int price, year, month, day;
+			for(DatePrice h:historyInfo){
+				price = h.getPriceInt();
+				year = h.getYear();
+				month = h.getMonth();
+				day = h.getDay();
+				%>
+				datePoints1.push({x: new Date(<%=year%>,<%=month%>,<%=day%>), y: <%=price%>})
+				<%
+			}
+		
+		%>
+		var datePoints2= []
+		<%
+			historyInfo = fApp.getHistoryDatePrice(stock2, stYear, stMonth, stDay, interval);
+			for(DatePrice h:historyInfo){
+				price = h.getPriceInt();
+				year = h.getYear();
+				month = h.getMonth();
+				day = h.getDay();
+				%>
+				datePoints2.push({x: new Date(<%=year%>,<%=month%>,<%=day%>), y: <%=price%>})
+				<%
+			}
+		
+		%>
+		var datePoints3= 	[]
+		<%
+			historyInfo = fApp.getHistoryDatePrice(stock3, stYear, stMonth, stDay, interval);
+			for(DatePrice h:historyInfo){
+				price = h.getPriceInt();
+				year = h.getYear();
+				month = h.getMonth();
+				day = h.getDay();
+				%>
+				datePoints3.push({x: new Date(<%=year%>,<%=month%>,<%=day%>), y: <%=price%>})
+				<%
+			}
+		
+		%>
+		
+	
+	    var chart = new CanvasJS.Chart("chartContainer", {
+	        backgroundColor: 'transparent',
+	        animationEnabled: true,
+	        theme: "light2",
+	        title: {
+	            text: "Stock History",
+	            fontColor: 'white'
+	        },
+	        axisX: [{
+	            title: "Date",
+	            titleFontColor: "white",
+	            lineColor: "white",
+	            tickColor: "white",
+	            labelFontColor: "white"
+	
+	        }],
+	        axisY: [{
+	            title: "Stock Price",
+	            titleFontColor: "white",
+	            tickColor: "white",
+	            labelFontColor: "white"
+	        }],
+	        legend:{
+	        fontSize: 20,
+	        fontFamily: "tamoha",
+	        fontColor: "White"      
+	         },
+	        data: [{
+	                type: "line",
+	                name: "<%=stock1%>",
+	                showInLegend: true,
+	                markerSize: 0,
+	                yValueFormatString: "$#,###k",
+	                dataPoints: datePoints1
+	            },
+	            {
+	                type: "line",
+	                name: "<%=stock2%>",
+	                labelFontColor: "white",
+	                showInLegend: true,
+	                markerSize: 0,
+	                yValueFormatString: "$#,###k",
+	                dataPoints: datePoints2
+	            },
+	            {
+	                type: "line",
+	                name: "<%=stock3%>",
+	                showInLegend: true,
+	                markerSize: 0,
+	                yValueFormatString: "$#,###k",
+	                dataPoints: datePoints3
+	            }
+	        ]
+	    });
+	    chart.render();
+	
+	}
+</script>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
 <html>
     <div class="shadow">
@@ -37,6 +153,7 @@
         <option> option 4 </option>
         <option> option 5 </option>
         </select>
+        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
     </body>
     </div>
 </html>
